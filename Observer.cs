@@ -53,6 +53,10 @@ public class Observer
     /// <param name="throwOnlyAfterMaxAttempts">Indicating to throw an exception only after the maximum number of attempts has been made.</param>
     public static void Log<T>(T payload, string token, int maxAttempts, bool throwOnFailed, bool throwOnlyAfterMaxAttempts)
     {
+        // Verify that the token passed is not null or empty.
+        if (string.IsNullOrWhiteSpace(token))
+            throw new Exception("Token cannot be null or empty.");
+
         // Add the parsed entry to the queue for transfer.
         Observer.QueuedEntries.Add(
             new ObserverEntry(
