@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Web.Script.Serialization;
 
 /// <summary>
 /// Interact with the Observer logging utility.
@@ -71,7 +72,7 @@ public class Observer
                 break;
 
             default:
-                Observer.CycleObject(ref payload, ref sb);
+                sb.Append("Value: " + new JavaScriptSerializer().Serialize(payload));
                 break;
         }
 
@@ -86,110 +87,6 @@ public class Observer
 
         // TODO: Check if an instance of the transfer-engine is running, if
         //       not, spawn a new instance in a separate thread.
-    }
-
-    /// <summary>
-    /// Return a padded (with spaces) string.
-    /// </summary>
-    /// <param name="count">The amount of spaces to insert.</param>
-    /// <returns>String</returns>
-    private static string Indent(int count, char chr = ' ')
-    {
-        return "".PadLeft(count, chr);
-    }
-
-    /// <summary>
-    /// Cycles the properties and fields of a class and logs them.
-    /// </summary>
-    /// <param name="payload">Variable to cycle.</param>
-    /// <param name="sb">Log entity to apply to.</param>
-    /// <param name="depth">Indenting depth, if any.</param>
-    private static void CycleObject<T>(ref T payload, ref StringBuilder sb, int depth = 2)
-    {
-        Type type = payload.GetType();
-
-        PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-        FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-
-        foreach (PropertyInfo property in properties)
-        {
-            switch (property.Name)
-            {
-                case "Chars":
-                case "Length":
-                    break;
-
-                default:
-                    var value = property.GetValue(payload, null);
-
-                    sb.AppendLine(Observer.Indent(depth) + "Property Name: " + property.Name);
-                    sb.AppendLine(Observer.Indent(depth) + "Type: " + value.GetType().ToString());
-
-                    switch (value.GetType().ToString())
-                    {
-                        case "System.Int16":
-                        case "System.Int32":
-                        case "System.Int64":
-                        case "System.Boolean":
-                            sb.AppendLine(Observer.Indent(depth) + "Value: " + value.ToString());
-                            break;
-
-                        case "System.String":
-                            sb.AppendLine(Observer.Indent(depth) + "IsNull: " + (value == null ? "Yes" : "No"));
-                            sb.AppendLine(Observer.Indent(depth) + "Length: " + (value != null ? value.ToString().Length.ToString() : ""));
-                            sb.AppendLine(Observer.Indent(depth) + "Value: " + value.ToString());
-                            break;
-
-                        default:
-                            Observer.CycleObject(ref value, ref sb, depth + 2);
-                            break;
-                    }
-
-                    sb.AppendLine("");
-
-                    break;
-            }
-        }
-
-        foreach (FieldInfo field in fields)
-        {
-            switch (field.Name)
-            {
-                case "Chars":
-                case "Length":
-                    break;
-
-                default:
-                    var value = field.GetValue(payload);
-
-                    sb.AppendLine(Observer.Indent(depth) + "Property Name: " + field.Name);
-                    sb.AppendLine(Observer.Indent(depth) + "Type: " + value.GetType().ToString());
-
-                    switch (value.GetType().ToString())
-                    {
-                        case "System.Int16":
-                        case "System.Int32":
-                        case "System.Int64":
-                        case "System.Boolean":
-                            sb.AppendLine(Observer.Indent(depth) + "Value: " + value.ToString());
-                            break;
-
-                        case "System.String":
-                            sb.AppendLine(Observer.Indent(depth) + "IsNull: " + (value == null ? "Yes" : "No"));
-                            sb.AppendLine(Observer.Indent(depth) + "Length: " + (value != null ? value.ToString().Length.ToString() : ""));
-                            sb.AppendLine(Observer.Indent(depth) + "Value: " + value.ToString());
-                            break;
-
-                        default:
-                            Observer.CycleObject(ref value, ref sb, depth + 2);
-                            break;
-                    }
-
-                    sb.AppendLine("");
-
-                    break;
-            }
-        }
     }
 }
 
