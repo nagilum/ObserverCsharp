@@ -52,34 +52,11 @@ public class Observer
     /// <param name="throwOnlyAfterMaxAttempts">Indicating to throw an exception only after the maximum number of attempts has been made.</param>
     public static void Log<T>(T payload, string token, int maxAttempts, bool throwOnFailed, bool throwOnlyAfterMaxAttempts)
     {
-        StringBuilder sb = new StringBuilder(
-            "Type: " + typeof(T).ToString());
-
-        // Compile output based on variable type.
-        switch (typeof(T).ToString())
-        {
-            case "System.Int16":
-            case "System.Int32":
-            case "System.Int64":
-            case "System.Boolean":
-                sb.AppendLine("Value: " + payload.ToString());
-                break;
-
-            case "System.String":
-                sb.AppendLine("IsNull: " + (payload == null ? "Yes" : "No"));
-                sb.AppendLine("Length: " + (payload != null ? payload.ToString().Length.ToString() : ""));
-                sb.AppendLine("Value: \"" + payload.ToString() + "\"");
-                break;
-
-            default:
-                sb.Append("Value: " + new JavaScriptSerializer().Serialize(payload));
-                break;
-        }
-
         // Add the parsed entry to the queue for transfer.
         Observer.QueuedEntries.Add(
             new ObserverEntry(
-                sb.ToString(),
+                new JavaScriptSerializer().Serialize(payload),
+                typeof(T).ToString(),
                 token,
                 maxAttempts,
                 throwOnFailed,
@@ -99,18 +76,18 @@ public class ObserverEntry
     /// Initiate a new instance of a log entry.
     /// </summary>
     /// <param name="text">The text to log.</param>
+    /// <param name="type">The type of variable passed.</param>
     /// <param name="token">The log identifier token.</param>
     /// <param name="maxAttempts">The maximum number of attempts to try and transfer this log entry.</param>
     /// <param name="throwOnFailed">Indicate to throw an exception if transfer for this log entry fails.</param>
     /// <param name="throwOnlyAfterMaxAttempts">Indicating to throw an exception only after the maximum number of attempts has been made.</param>
-    public ObserverEntry(string text, string token, int maxAttempts = 10, bool throwOnFailed = false, bool throwOnlyAfterMaxAttempts = false)
+    public ObserverEntry(string text, string type, string token, int maxAttempts = 10, bool throwOnFailed = false, bool throwOnlyAfterMaxAttempts = false)
     {
         this.DateTime = DateTime.Now;
         this.Length = text.Length;
         this.Text = text;
-
+        this.Type = type;
         this.Token = token;
-
         this.MaxAttempts = maxAttempts;
         this.ThrowExceptionOnFailedTransfer = throwOnFailed;
         this.ThrowOnlyAfterMaxAttempts = throwOnlyAfterMaxAttempts;
@@ -140,6 +117,11 @@ public class ObserverEntry
     /// The parsed text to log.
     /// </summary>
     public string Text;
+
+    /// <summary>
+    /// The type of variable passed.
+    /// </summary>
+    public string Type;
 
     /// <summary>
     /// The log identifier token.
