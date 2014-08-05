@@ -47,6 +47,7 @@ public class Observer
     /// Parse payload and add it to transfer queue for logging.
     /// </summary>
     /// <param name="payload">Variable to log.</param>
+    /// <param name="token">The log identifier token.</param>
     /// <param name="maxAttempts">The maximum number of attempts to try and transfer this log entry.</param>
     /// <param name="throwOnFailed">Indicate to throw an exception if transfer for this log entry fails.</param>
     /// <param name="throwOnlyAfterMaxAttempts">Indicating to throw an exception only after the maximum number of attempts has been made.</param>
